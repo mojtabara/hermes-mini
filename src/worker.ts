@@ -1009,7 +1009,7 @@ export default {
       return new Response('ok', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     }
     if (req.method === 'GET' && url.pathname === '/') {
-      return Response.json({ ok: true, name: 'hermes-mini', time: new Date().toISOString() });
+      return Response.json({ ok: true, name: 'hermes-mini', build: 'bale3', time: new Date().toISOString() });
     }
 
     const isBale = url.pathname === '/bale';
@@ -1033,8 +1033,13 @@ export default {
 
       const msg = update.message;
       if (platform === 'bale') {
-        // Bale's payload shape is a moving target — keep a bounded ops trace.
-        console.log(`[bale] update: ${JSON.stringify(update).slice(0, 400)}`);
+        // Bale's payload shape is a moving target — persist a bounded sample
+        // straight into D1 so it can be inspected without relying on tail.
+        try {
+          await setMeta(env.DB, 'bale_last_update', JSON.stringify(update).slice(0, 800));
+        } catch (e) {
+          console.error('[bale] debug persist failed:', e instanceof Error ? e.message : e);
+        }
       }
       if (msg && typeof msg.text === 'string') {
         // Process inline (the webhook timeout is generous) and only then return
