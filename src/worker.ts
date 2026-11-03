@@ -873,11 +873,16 @@ async function handleMessage(env: Env, platform: string, msg: TgMessage): Promis
   const now = tehranNow();
   const uid = msg.from?.id ?? chatId;
 
-  // R5 — whitelist lives in the D1 `users` table; strangers get no reply at all.
+  // R5 — whitelist lives in the D1 `users` table. Telegram stays whitelisted
+  // (with one bootstrap id); **Bale is open**: anyone who messages the bot is
+  // auto-registered on first contact, so every Bale user gets their own scope.
   let user = await getUser(env.DB, platform, uid);
   if (!user && platform === 'telegram' && env.ALLOWED_USER_ID && String(uid) === String(env.ALLOWED_USER_ID)) {
     user = await addUser(env.DB, platform, uid, msg.from?.first_name ?? null);
     console.log(`[users] bootstrapped ${platform}:${uid}`);
+  } else if (!user && platform === 'bale') {
+    user = await addUser(env.DB, platform, uid, msg.from?.first_name ?? null);
+    console.log(`[users] bale auto-registered ${uid}`);
   }
   if (!user || !user.active) {
     console.log(`[auth] ignored non-whitelisted sender ${platform}:${uid}`);
@@ -1027,6 +1032,10 @@ export default {
       }
 
       const msg = update.message;
+      if (platform === 'bale') {
+        // Bale's payload shape is a moving target — keep a bounded ops trace.
+        console.log(`[bale] update: ${JSON.stringify(update).slice(0, 400)}`);
+      }
       if (msg && typeof msg.text === 'string') {
         // Process inline (the webhook timeout is generous) and only then return
         // 200. Inline keeps the reply out of waitUntil, whose ~30s cap proved
