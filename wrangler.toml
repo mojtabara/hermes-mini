@@ -1,0 +1,30 @@
+name = "hermes-mini"
+main = "src/worker.ts"
+compatibility_date = "2026-01-15"
+
+[observability]
+enabled = true
+
+[triggers]
+# Every 5 minutes: task reminders + the daily morning list (bonus).
+crons = ["*/5 * * * *"]
+
+[vars]
+# Tehran hour (0-23) when the daily morning task list is sent to every user.
+TEHRAN_DAILY_HOUR = "8"
+# Any Gemini model with a clean HTTP API; switchable without code changes.
+GEMINI_MODEL = "gemini-3.5-flash-lite"
+# Bootstrap: if set and this Telegram id is not yet in the `users` table, the
+# first message from it is auto-added. The real whitelist lives in D1 (users).
+ALLOWED_USER_ID = "7521617758"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hermes-mini"
+# After `wrangler d1 create hermes-mini`, paste the printed database_id here:
+database_id = "38dbf26b-bd7d-48a6-9a91-7d9eae5ef494"
+
+# ── Secrets — NEVER put these in this file (set with `wrangler secret put ...`) ──
+#   TELEGRAM_BOT_TOKEN       from @BotFather
+#   TELEGRAM_WEBHOOK_SECRET  any long random string (Telegram echoes it in a header)
+#   GEMINI_KEYS              JSON array, one or more keys: ["key1","key2",...]

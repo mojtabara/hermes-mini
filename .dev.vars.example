@@ -1,0 +1,9 @@
+# Copy this file to `.dev.vars` for local testing with `wrangler dev`.
+# .dev.vars is git-ignored — NEVER commit it.
+TELEGRAM_BOT_TOKEN=123456789:AAF-your-botfather-token
+TELEGRAM_WEBHOOK_SECRET=some-long-random-string
+GEMINI_KEYS=["your-gemini-key-1","your-gemini-key-2"]
+
+# Optional — Bale messenger (Iranian Telegram-style Bot API, tapi.bale.ai):
+# BALE_BOT_TOKEN=your-bale-bot-token
+# BALE_WEBHOOK_SECRET=some-other-long-random-string
