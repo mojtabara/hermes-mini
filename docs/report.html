@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>hermes-mini — Technical Report (Cloud Computing Course Project)</title>
+<style>
+  :root {
+    --c-primary: #16324f;
+    --c-secondary: #2e5e8c;
+    --c-accent: #3d84a8;
+    --c-text: #1c2430;
+    --c-muted: #5b6b7c;
+    --c-panel: #eef3f8;
+    --c-line: #c9d6e2;
+  }
+  @page { size: 210mm 297mm; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  body { font-family: "Segoe UI", Tahoma, "Segoe UI Emoji", sans-serif; color: var(--c-text); font-size: 9.4pt; line-height: 1.36; }
+  .page {
+    width: 210mm; height: 297mm; box-sizing: border-box;
+    padding: 11mm 15mm 10mm 15mm;
+    page-break-after: always; position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+  @media screen {
+    html { background: #ffffff; }
+    body { transform: scale(0.85); transform-origin: top center; }
+  }
+  h1 { font-size: 25pt; margin: 0 0 2mm 0; color: var(--c-primary); letter-spacing: -0.3pt; }
+  h2 { font-size: 12.5pt; margin: 3.4mm 0 1.8mm 0; color: var(--c-primary); border-bottom: 1.2pt solid var(--c-accent); padding-bottom: 1mm; }
+  h3 { font-size: 10.5pt; margin: 3mm 0 1.5mm 0; color: var(--c-secondary); }
+  p { margin: 0 0 1.8mm 0; text-align: justify; }
+  .kicker { font-size: 8pt; letter-spacing: 2.2pt; color: var(--c-accent); font-weight: 600; text-transform: uppercase; margin-bottom: 2.5mm; }
+  .subtitle { font-size: 12pt; color: var(--c-secondary); margin: 0 0 3mm 0; font-weight: 600; }
+  .meta { font-size: 8pt; color: var(--c-muted); border-top: 0.8pt solid var(--c-line); border-bottom: 0.8pt solid var(--c-line); padding: 2mm 0; margin-bottom: 4mm; }
+  .meta span { margin-right: 5mm; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 8.6pt; }
+  .contract { background: var(--c-panel); border: 0.8pt solid var(--c-line); border-radius: 4px; padding: 2.2mm 3mm; margin: 0 0 2.5mm 0; font-family: Consolas, monospace; font-size: 8.2pt; color: var(--c-primary); word-break: break-all; }
+  table { width: 100%; border-collapse: collapse; margin: 0 auto 2.5mm auto; }
+  th { background: var(--c-primary); color: #fff; font-size: 8.6pt; padding: 1.6mm 2.4mm; text-align: left; font-weight: 600; }
+  td { border-bottom: 0.6pt solid var(--c-line); padding: 1.25mm 2.4mm; font-size: 8.8pt; vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f9fc; }
+  td.fa { direction: rtl; text-align: right; font-size: 9pt; }
+  ul { margin: 0 0 2.2mm 0; padding-left: 4.5mm; }
+  li { margin-bottom: 0.9mm; }
+  .fig { display: block; width: 100%; margin: 2mm auto 1mm auto; }
+  .diagram { background: var(--c-panel); border: 0.8pt solid var(--c-line); border-radius: 6px; padding: 4mm 3mm; text-align: center; }
+  .drow { display: flex; justify-content: center; align-items: stretch; gap: 3mm; margin: 0; }
+  .dbox { border: 1pt solid var(--c-secondary); border-radius: 5px; background: #fff; padding: 2.4mm 3mm; font-size: 8.6pt; font-weight: 600; color: var(--c-primary); display: flex; flex-direction: column; justify-content: center; min-width: 24mm; }
+  .dbox small { font-weight: 400; color: var(--c-muted); font-size: 7.8pt; }
+  .darrow { align-self: center; color: var(--c-accent); font-weight: 700; font-size: 11pt; }
+  .dsub { display: flex; justify-content: center; gap: 10mm; margin-top: 3mm; padding-top: 3mm; border-top: 0.8pt dashed var(--c-line); }
+  .caption { font-size: 7.8pt; color: var(--c-muted); text-align: center; margin-top: 1.5mm; }
+  .chat { direction: rtl; text-align: right; background: var(--c-panel); border-right: 2.5pt solid var(--c-accent); border-radius: 5px; padding: 2.2mm 3.2mm; margin: 0 0 2.2mm 0; font-size: 8.9pt; line-height: 1.45; }
+  .chat .u { color: var(--c-text); font-weight: 600; }
+  .chat .b { color: var(--c-primary); }
+  .chat .who { color: var(--c-accent); font-weight: 700; font-size: 8pt; }
+  .twocol { display: flex; gap: 5mm; }
+  .twocol > div { flex: 1; }
+  .note { background: #f6f9fc; border-left: 2.5pt solid var(--c-secondary); padding: 2mm 3mm; border-radius: 4px; font-size: 8.8pt; margin-bottom: 2.5mm; }
+  .footer { position: absolute; bottom: 6mm; left: 15mm; right: 15mm; font-size: 7.6pt; color: var(--c-muted); border-top: 0.8pt solid var(--c-line); padding-top: 1.6mm; display: flex; justify-content: space-between; }
+  .pill { display: inline-block; background: var(--c-panel); color: var(--c-secondary); border: 0.7pt solid var(--c-line); border-radius: 8px; padding: 0.3mm 2.2mm; font-size: 7.8pt; margin-right: 1.6mm; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ PAGE 1 ═══════════════════════ -->
+<div class="page">
+  <div class="kicker">Cloud Computing Course Project — Technical Report</div>
+  <h1>hermes-mini</h1>
+  <div class="subtitle">A Serverless Persian Task Assistant on Cloudflare — Telegram &amp; Bale, Multi-User</div>
+  <div class="meta">
+    <span><b>Author:</b> Mojtaba (mojtaba.err@gmail.com)</span>
+    <span><b>Date:</b> Aban 1405 / November 2026</span>
+    <span><b>Live URL:</b> https://hermes-mini.mojtaba-dev.workers.dev</span>
+    <span><b>Stack:</b> Workers + D1 + Gemini</span>
+  </div>
+
+  <h2>1&nbsp;·&nbsp;Overview</h2>
+  <p><b>hermes-mini</b> is a task assistant you talk to in plain, conversational Persian: «میان‌ترم درس رایانش ابری دوشنبه هفته دیگه ساعت ۱۰ دارم» becomes a stored task with a reminder two days earlier. There are <b>no slash commands</b> — understanding the message and deciding the action is entirely the language model's job (R1, R2). The whole system runs on the Cloudflare <b>free plan</b>: a single Worker file, a D1 SQLite database, a cron trigger, and the Gemini API behind a round-robin of ten API keys. It serves <b>multiple whitelisted users</b> and supports the Iranian messenger <b>Bale</b> alongside Telegram. State (tasks, chat memory, key-rotation cursor, user whitelist) lives entirely in D1; the Worker itself is stateless.</p>
+
+  <h2>2&nbsp;·&nbsp;Architecture</h2>
+  <div class="fig diagram">
+    <div class="drow">
+      <div class="dbox">👥 Users<small>Telegram · Bale</small></div>
+      <div class="darrow">→</div>
+      <div class="dbox">Bot API<small>webhook + secret header</small></div>
+      <div class="darrow">→</div>
+      <div class="dbox">⛅ Worker<small>hermes-mini<br>(src/worker.ts, one file)</small></div>
+      <div class="darrow">→</div>
+      <div class="dbox">🗄 D1<small>tasks · memory<br>users · meta</small></div>
+    </div>
+    <div class="dsub">
+      <div class="dbox">✨ Gemini API<small>10 keys round-robin<br>3-model fallback chain</small></div>
+      <div class="darrow">⇡ Worker calls out</div>
+      <div class="dbox">⏰ Cron */5 * * * *<small>reminders · daily list</small></div>
+    </div>
+  </div>
+  <div class="caption">Figure 1 — Event flow. The Worker answers the webhook, decides with Gemini, acts on D1, and replies on the user's own messenger. Cron drives reminders and the morning list.</div>
+
+  <h2>3&nbsp;·&nbsp;Design Decisions</h2>
+  <table>
+    <tr><th style="width:24%">Decision</th><th>Justification</th></tr>
+    <tr><td><b>Webhook, not polling</b></td><td>The Worker runs only when an event arrives — no idle cost, no keep-alive process. Polling would burn requests around the clock and needs a persistent consumer, which FaaS does not offer.</td></tr>
+    <tr><td><b>FaaS for this workload</b></td><td>Traffic is a few dozen messages a day. A VM would be ~100% idle; Workers bill per request with a 100k/day free allowance — effectively <span>$</span>0.</td></tr>
+    <tr><td><b>D1, not KV</b></td><td>Tasks need real queries: due-time windows for reminders, fuzzy title matching, per-user streak aggregation, id-based updates. KV is a whole-value lookup with no queryability; D1 is SQLite with indexes and transactions.</td></tr>
+    <tr><td><b>State lives in D1</b></td><td>Tasks, rolling chat memory, whitelist, and the Gemini key-rotation cursor are all rows. Any isolate can serve any request; restarts lose nothing.</td></tr>
+    <tr><td><b>Tehran time</b></td><td>The runtime has no timezone. Wall-clock strings (due_date, due_time) are Tehran-local; comparisons use epoch-ms. Tehran = UTC+03:30 <i>fixed</i> (Iran abolished DST in 2022), so <span class="mono">tehranNow()</span> shifts <span class="mono">Date.now()</span> by 210 minutes and reads UTC fields. Display uses Jalali dates via a bundled, unit-tested conversion (no library).</td></tr>
+    <tr><td><b>One worker file</b></td><td>All logic fits in a single <span class="mono">src/worker.ts</span> (~950 lines) — the hard "no frameworks" constraint, kept deliberately.</td></tr>
+  </table>
+
+  <div class="footer"><span>hermes-mini · Technical Report · Cloudflare Workers + D1 + Gemini</span><span>Page 1 / 4</span></div>
+</div>
+
+<!-- ═══════════════════════ PAGE 2 ═══════════════════════ -->
+<div class="page">
+  <h2>4&nbsp;·&nbsp;The Intelligence Layer</h2>
+  <p>Every message is sent to Gemini together with three pieces of ground truth: the <b>current Tehran datetime</b> (Gregorian + Jalali + weekday, so relative phrases like «دوشنبه هفته دیگه» resolve deterministically), the <b>numbered list of open tasks</b>, and the <b>last 12 chat turns</b> (R4). The model must answer with a single line of JSON — enforced by <span class="mono">responseMimeType: application/json</span>:</p>
+  <div class="contract">{"action":"add|done|undone|del|edit|search|stats|list|chat","task":…,"date":"YYYY-MM-DD","time":"HH:MM","remind_minutes":…,"category":…,"scope":"open|done","target_ids":[…],"target_query":…,"all":false,"reply":"…"}</div>
+  <div class="twocol">
+    <div>
+      <h3>Validation &amp; safe fallback (R3)</h3>
+      <ul>
+        <li>A hand-rolled validator checks the action set, date format &amp; range (not in the past), reminder ≤ 30 days, <span class="mono">add</span> needs a title, <span class="mono">done/del</span> need a target, <span class="mono">edit</span> needs a target <i>and</i> a change.</li>
+        <li>On invalid output the model is shown its own output plus the error and retries <b>once</b>.</li>
+        <li>If it still fails → a Persian apology is sent and <b>nothing is written to D1</b>. Malformed output can never corrupt data.</li>
+      </ul>
+      <h3>Target resolution</h3>
+      <ul>
+        <li>By id from the numbered list, or fuzzy Persian title match (ي→ی، ك→ک، Arabic→Persian digits, ZWNJ stripped).</li>
+        <li>Ambiguous matches make the bot <b>ask which one</b> — never guess (graded robustness case).</li>
+        <li>Ids are looked up across all statuses, so «شماره‌ی ۳ رو حذف کن» works even for done tasks.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Round-robin &amp; model chain</h3>
+      <ul>
+        <li><b>10 keys</b> rotate on every call; the cursor persists in D1 and survives restarts.</li>
+        <li>Failures are classified: dead key (400/401/403) → next key; overload (404/429/5xx) → <b>next model</b> in the chain: <span class="mono">flash-lite → 3.6-flash → flash-latest</span>.</li>
+        <li>A <b>14&nbsp;s hard deadline</b> plus 8&nbsp;s per-call timeouts bound the whole chain — the bot always answers something.</li>
+        <li>3.x models run with <span class="mono">thinkingLevel: "low"</span>.</li>
+      </ul>
+      <div class="note"><b>Key lesson:</b> Gemini 3.x models "think" by default (~400+ thought tokens per decision). Benchmarked <span class="mono">thinkingLevel: "low"</span> cut a typical decision from 11.2&nbsp;s to 3.6&nbsp;s with no contract-quality loss.</div>
+    </div>
+  </div>
+
+  <h3>Live model benchmark (production prompt, 5 real cases)</h3>
+  <table>
+    <tr><th>Model</th><th>Success</th><th>Contract quality</th><th>Avg latency</th><th>Verdict</th></tr>
+    <tr><td>gemini-3.6-flash</td><td>3 / 5</td><td>3 / 3 of answered</td><td>5.6 s</td><td>Smart but flaky (503/timeout that day)</td></tr>
+    <tr><td>gemini-3.5-flash</td><td>1 / 5</td><td>–</td><td>–</td><td>Hard 429 rate-limiting — dropped</td></tr>
+    <tr><td><b>gemini-3.5-flash-lite</b></td><td><b>5 / 5</b></td><td>4 / 5</td><td>8.9 s → <b>3.6 s</b> (thinking-low)</td><td><b>Chosen primary</b></td></tr>
+    <tr><td>gemini-3.1-flash-lite</td><td>2 / 5</td><td>2 / 2</td><td>5.7 s</td><td>Overloaded — kept out</td></tr>
+  </table>
+  <div class="caption">Table 1 — Benchmark run live against the real system prompt and validator (<span class="mono">tests/bench-models.mts</span>). The one "≈" case was relative-date reasoning, mitigated by prompting rules + the fallback chain.</div>
+
+  <h2>5&nbsp;·&nbsp;Reliability Engineering</h2>
+  <ul>
+    <li><b>Inline processing:</b> the webhook is answered 200 <i>after</i> the work. An early design did the work in <span class="mono">ctx.waitUntil</span> — when Google 503s responded slowly, the ~30 s waitUntil budget killed the task mid-flight and replies silently vanished. Inline + deadlines removed the failure mode entirely (every outcome answers 200, so Telegram never redelivers).</li>
+    <li><b>Cron (bonus):</b> <span class="mono">*/5 * * * *</span> fires reminders due within ≤5 min (joined with the users table so each reminder lands on the right messenger), and once a day at a fixed Tehran hour sends every user their grouped list plus a streak line.</li>
+    <li><b>Health &amp; observability:</b> <span class="mono">GET /health</span> on the live URL; unsigned webhooks get <b>403</b> (R6); strangers are rejected <b>silently</b> (R5, now a D1 whitelist); observability is enabled and demoed with <span class="mono">wrangler tail</span>.</li>
+    <li><b>46 unit tests</b> cover the pure core: Jalali conversions (Nowruz + leap-year fixtures), the decision contract, key parsing, Persian normalization, list rendering — all passing.</li>
+  </ul>
+
+  <div class="footer"><span>hermes-mini · Technical Report · Cloudflare Workers + D1 + Gemini</span><span>Page 2 / 4</span></div>
+</div>
+
+<!-- ═══════════════════════ PAGE 3 ═══════════════════════ -->
+<div class="page">
+  <h2>6&nbsp;·&nbsp;Features &amp; the Action Contract</h2>
+  <table>
+    <tr><th style="width:11%">Action</th><th style="width:44%">Behavior</th><th>Persian example → result</th></tr>
+    <tr><td><b>add</b></td><td>Stores a task with due date/time, category tag, and an LLM-chosen reminder for important work (exams 2 days before, meetings 1 day).</td><td class="fa">«شیر بخر» → ثبت در لیست؛ «امتحان فردا هفته دیگه» → ثبت + یادآوری ۲ روز قبل</td></tr>
+    <tr><td><b>done</b></td><td>Ticks a task off (cancels its reminders).</td><td class="fa">«شیر رو خریدم» → تیک خورد ✅</td></tr>
+    <tr><td><b>undone</b></td><td>Re-opens a wrongly-ticked task.</td><td class="fa">«اشتباه تیک خورد» → برگشت به باز</td></tr>
+    <tr><td><b>del</b></td><td>Deletes by id/query; <span class="mono">all</span> empties open tasks; <span class="mono">scope:"done"</span> empties the archive.</td><td class="fa">«همه رو حذف کن» → پاک شدن همه‌ی کارهای باز</td></tr>
+    <tr><td><b>edit</b></td><td>Changes title/date/time/reminder/category. The stored reminder offset is re-derived automatically when the due time moves.</td><td class="fa">«جلسه رو ببر شنبه» → تاریخ جدید + یادآوری جابه‌جا</td></tr>
+    <tr><td><b>search</b></td><td>Searches open <i>and</i> archived tasks (title + category).</td><td class="fa">«اون آزمون کی بود؟» → نتایج با وضعیت ✅/▫️</td></tr>
+    <tr><td><b>stats</b></td><td>Done-counts per Tehran day, current &amp; best streak.</td><td class="fa">«استریکم چیه؟» → 🔥 ۵ روز پشت‌سرهم</td></tr>
+    <tr><td><b>list</b></td><td>Grouped list: overdue ⚠️, today, tomorrow, this week (weekday), later (Jalali date), no-date.</td><td class="fa">«کارام چیه؟» → فهرست شماره‌دار با برچسب دسته</td></tr>
+    <tr><td><b>chat</b></td><td>Anything else — with 12-turn conversational memory and clarification questions on ambiguity.</td><td class="fa">«سلام» → پاسخ گفتگویی طبیعی</td></tr>
+  </table>
+
+  <h2>7&nbsp;·&nbsp;Multi-User &amp; Bale</h2>
+  <ul>
+    <li>The whitelist is the D1 <span class="mono">users (platform, user_id)</span> table; tasks are scoped per platform so the same numeric id on two messengers never collides. Adding a user is one SQL insert (no redeploy).</li>
+    <li>Reminders and the daily morning list are delivered on <b>each user's own messenger</b> (Telegram or Bale).</li>
+    <li><b>Bale</b> mirrors Telegram's Bot API: the worker serves it at <span class="mono">POST /bale</span>, its bot token/secret are separate secrets, and registration is <span class="mono">node scripts/set-webhook.mjs &lt;url&gt; --bale</span> (base <span class="mono">tapi.bale.ai</span>).</li>
+  </ul>
+
+  <h2>8&nbsp;·&nbsp;Live Transcripts (raw, from the deployed bot)</h2>
+  <div class="chat">
+    <div><span class="u">E R:</span> فردا جلسه میرم</div>
+    <div><span class="b"><span class="who">hermes:</span> جلسه رو برای فردا، چهارشنبه ۱۳ آبان ثبت کردم. خواستی بگو چند ساعت قبل هم یادت بندازم. ✅ «جلسه» ثبت شد — فردا ⏰ یک روز قبل یادت می‌اندازم.</span></div>
+    <div><span class="u">E R:</span> ساعت 9 صبح</div>
+    <div><span class="b"><span class="who">hermes:</span> جلسه‌ات رو برای فردا، چهارشنبه ۱۳ آبان ساعت ۹ صبح به‌روزرسانی کردم. ✅ «جلسه» ثبت شد — فردا ساعت ۰۹:۰۰</span></div>
+    <div><span class="u">E R:</span> 2 ساعت قبلش خبر بده</div>
+    <div><span class="b"><span class="who">hermes:</span> حله، یادآوری جلسه رو برای ۲ ساعت قبلش (ساعت ۷ صبح فردا) تنظیم کردم. ⏰ ۲ ساعت قبل یادت می‌اندازم.</span></div>
+  </div>
+  <div class="chat">
+    <div><span class="u">E R:</span> سه شنبه هفته دیگه امتحان دارم</div>
+    <div><span class="b"><span class="who">hermes:</span> امتحانت رو برای سه‌شنبه ثبت کردم. چون امتحان مهمه، دو روز قبلش یادت می‌ندازم؛ خواستی بگو تغییرش بدم. ✅ «امتحان» ثبت شد ⏰ ۲ روز قبل یادت می‌اندازم.</span></div>
+    <div><span class="u">E R:</span> فردا جلسه نمیرم</div>
+    <div><span class="b"><span class="who">hermes:</span> کدوم جلسه‌ات رو لغو کنم؟ چند تا جلسه داری؛ شماره‌ش رو بگو. <span style="color:#5b6b7c">(ambiguity → clarification, no guess)</span></span></div>
+    <div><span class="u">E R:</span> همه رو حذف کن</div>
+    <div><span class="b"><span class="who">hermes:</span> همه‌ی کارهات رو پاک کردم. اگر کار تازه‌ای داشتی، بهم بگو. 🗑</span></div>
+  </div>
+  <div class="chat">
+    <div><span class="u">E R:</span> آمارم رو نشون بده</div>
+    <div><span class="b"><span class="who">hermes:</span> 📊 آمار کارهایت: ✅ امروز: ۳ کار · 📅 ۷ روز اخیر: ۱۲ کار · 🔥 استریک فعلی: ۵ روز پشت‌سرهم · 🏆 رکورد: ۹ روز · 📦 آرشیو: ۴۸ کار <span style="color:#5b6b7c">(sample output)</span></span></div>
+  </div>
+  <div class="caption">Figure 2 — Transcript excerpts (Aban 1405). Note reminder negotiation by pure conversation, the ambiguity clarification, and Persian-only UX throughout.</div>
+
+  <div class="footer"><span>hermes-mini · Technical Report · Cloudflare Workers + D1 + Gemini</span><span>Page 3 / 4</span></div>
+</div>
+
+<!-- ═══════════════════════ PAGE 4 ═══════════════════════ -->
+<div class="page">
+  <h2>9&nbsp;·&nbsp;Cost Analysis at Two Scales</h2>
+  <table>
+    <tr><th>Metric (per day)</th><th>1 user</th><th>10,000 users</th><th>Free-tier limit</th></tr>
+    <tr><td>Worker requests (webhooks + cron)</td><td>~320</td><td>~260,000</td><td>100,000 (free)</td></tr>
+    <tr><td>D1 rows read</td><td>~2,000</td><td>~5,000,000</td><td>5,000,000 (free)</td></tr>
+    <tr><td>D1 rows written</td><td>~200</td><td>~300,000</td><td>100,000 (free)</td></tr>
+    <tr><td>Gemini calls (≈1.5k tokens each)</td><td>~25</td><td>~250,000</td><td>per-key quota ×10 keys</td></tr>
+    <tr><td>Cloudflare cost / month</td><td><b><span>$</span>0</b></td><td>≈ <span>$</span>10 (Workers Paid <span>$</span>5 + D1 paid tier)</td><td>–</td></tr>
+    <tr><td>LLM cost / month (raw)</td><td><b><span>$</span>0</b> (free tier)</td><td>≈ <span>$</span>1,300–1,800</td><td>–</td></tr>
+    <tr><td>LLM cost / month (cached + batched)</td><td><b><span>$</span>0</b></td><td>≈ <span>$</span>400–700 (≈ 4–7¢ / user)</td><td>–</td></tr>
+  </table>
+  <div class="caption">Table 2 — Order-of-magnitude estimates, flash-class pricing, November 2026. Static prompt bytes dominate input and are cache-discounted; batching halves output cost.</div>
+  <p><b>Reading:</b> at one user everything fits the free plan — the product costs <b>literally zero</b>. At 10,000 users the cloud infrastructure is still pocket change; the <b>language model is the only real cost driver</b>, and the engineering answer is prompt caching, batching, a lite-class primary model, and per-user quotas — exactly why the model is a one-line config value, not a hard-coded name.</p>
+
+  <h2>10&nbsp;·&nbsp;Where We Got Stuck (and How We Unblocked)</h2>
+  <ul>
+    <li><b>Model retirement mid-project.</b> The bot answered every message with the fallback apology; logs showed <span class="mono">404 — gemini-2.5-flash is no longer available to new users</span> across all 10 keys. Fix: switched primary model, then built the benchmark suite so models are swappable config and the chain degrades gracefully.</li>
+    <li><b>Silent dead replies (waitUntil).</b> Google's 503s under load respond slowly; retries inside <span class="mono">ctx.waitUntil</span> exceeded its ~30 s lifetime and Cloudflare cancelled the task mid-flight — no reply, no fallback, nothing in the DB. Fix: inline processing with a 14 s deadline and 8 s per-call timeouts.</li>
+    <li><b>workers.dev subdomain prerequisite.</b> First deploy failed until an account subdomain existed (API errors 10031 "unavailable", 10036 "already associated") — the exact pitfall the project spec warns about.</li>
+    <li><b>New Gemini key format.</b> AI Studio now issues keys shaped like OAuth codes (<span class="mono">AQ.Ab8RN6…</span>); they were verified empirically against the models endpoint rather than assumed.</li>
+    <li><b>Jalali leap-year port bug.</b> Porting jalaali-js with <span class="mono">Math.floor</span> instead of truncating division shifted every date by one day (a negative <span class="mono">mod</span> in the leap calculation). Unit tests with Nowruz and leap-day fixtures caught it.</li>
+    <li><b>Persian text matching.</b> Arabic ي/ى vs Persian ی, ك vs ک, zero-width non-joiner and Persian digits all broke fuzzy search until a normalizer folded them.</li>
+  </ul>
+
+  <h2>11&nbsp;·&nbsp;Operations &amp; Deliverables</h2>
+  <div class="twocol">
+    <div>
+      <ul>
+        <li><span class="pill">repo</span> Git repository — code + migrations, <b>no secrets whatsoever</b> (all keys live in the Workers secret store)</li>
+        <li><span class="pill">live</span> https://hermes-mini.mojtaba-dev.workers.dev/health</li>
+        <li><span class="pill">migrations</span> <span class="mono">0001_init.sql</span>, <span class="mono">0002_multiuser.sql</span> — schema kept separate from code (R7)</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li><span class="pill">ops</span> <span class="mono">wrangler deploy</span>, secrets via <span class="mono">wrangler secret put</span>, observability on, live logs with <span class="mono">wrangler tail</span></li>
+        <li><span class="pill">quality</span> 46 / 46 tests passing; 38-case decision-contract suite; live 4-model benchmark harness</li>
+        <li><span class="pill">bonus</span> Daily morning reminder per user via Cron Triggers (+0.25)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer"><span>hermes-mini · Technical Report · Cloudflare Workers + D1 + Gemini · November 2026</span><span>Page 4 / 4</span></div>
+</div>
+
+</body>
+</html>
