@@ -68,7 +68,7 @@
 <div class="page">
   <div class="kicker">Cloud Computing Course Project — Technical Report</div>
   <h1>hermes-mini</h1>
-  <div class="subtitle">A Serverless Persian Task Assistant on Cloudflare — Telegram &amp; Bale, Multi-User</div>
+  <div class="subtitle">A Serverless Persian Task Assistant on Cloudflare — Telegram, Multi-User</div>
   <div class="meta">
     <span><b>Author:</b> Mojtaba Rouki</span>
     <span><b>Date:</b> Aban 1405 / November 2026</span>
@@ -77,12 +77,12 @@
   </div>
 
   <h2>1&nbsp;·&nbsp;Overview</h2>
-  <p><b>hermes-mini</b> is a task assistant you talk to in plain, conversational Persian: «میان‌ترم درس رایانش ابری دوشنبه هفته دیگه ساعت ۱۰ دارم» becomes a stored task with a reminder two days earlier. There are <b>no slash commands</b> — understanding the message and deciding the action is entirely the language model's job (R1, R2). The whole system runs on the Cloudflare <b>free plan</b>: a single Worker file, a D1 SQLite database, a cron trigger, and the Gemini API behind a round-robin of ten API keys. It serves <b>multiple whitelisted users</b> and supports the Iranian messenger <b>Bale</b> alongside Telegram. State (tasks, chat memory, key-rotation cursor, user whitelist) lives entirely in D1; the Worker itself is stateless.</p>
+  <p><b>hermes-mini</b> is a task assistant you talk to in plain, conversational Persian: «میان‌ترم درس رایانش ابری دوشنبه هفته دیگه ساعت ۱۰ دارم» becomes a stored task with a reminder two days earlier. There are <b>no slash commands</b> — understanding the message and deciding the action is entirely the language model's job (R1, R2). The whole system runs on the Cloudflare <b>free plan</b>: a single Worker file, a D1 SQLite database, a cron trigger, and the Gemini API behind a round-robin of ten API keys. It serves <b>multiple whitelisted users</b>. State (tasks, chat memory, key-rotation cursor, user whitelist) lives entirely in D1; the Worker itself is stateless.</p>
 
   <h2>2&nbsp;·&nbsp;Architecture</h2>
   <div class="fig diagram">
     <div class="drow">
-      <div class="dbox">👥 Users<small>Telegram · Bale</small></div>
+      <div class="dbox">👥 Users<small>Telegram</small></div>
       <div class="darrow">→</div>
       <div class="dbox">Bot API<small>webhook + secret header</small></div>
       <div class="darrow">→</div>
@@ -157,7 +157,7 @@
   <h2>5&nbsp;·&nbsp;Reliability Engineering</h2>
   <ul>
     <li><b>Inline processing:</b> the webhook is answered 200 <i>after</i> the work. An early design did the work in <span class="mono">ctx.waitUntil</span> — when Google 503s responded slowly, the ~30 s waitUntil budget killed the task mid-flight and replies silently vanished. Inline + deadlines removed the failure mode entirely (every outcome answers 200, so Telegram never redelivers).</li>
-    <li><b>Cron (bonus):</b> <span class="mono">*/5 * * * *</span> fires reminders due within ≤5 min (joined with the users table so each reminder lands on the right messenger), and once a day at a fixed Tehran hour sends every user their grouped list plus a streak line.</li>
+    <li><b>Cron (bonus):</b> <span class="mono">*/5 * * * *</span> fires reminders due within ≤5 min (joined with the users table so each reminder reaches its user), and once a day at a fixed Tehran hour sends every user their grouped list plus a streak line.</li>
     <li><b>Health &amp; observability:</b> <span class="mono">GET /health</span> on the live URL; unsigned webhooks get <b>403</b> (R6); strangers are rejected <b>silently</b> (R5, now a D1 whitelist); observability is enabled and demoed with <span class="mono">wrangler tail</span>.</li>
     <li><b>46 unit tests</b> cover the pure core: Jalali conversions (Nowruz + leap-year fixtures), the decision contract, key parsing, Persian normalization, list rendering — all passing.</li>
   </ul>
@@ -181,11 +181,10 @@
     <tr><td><b>chat</b></td><td>Anything else — with 12-turn conversational memory and clarification questions on ambiguity.</td><td class="fa">«سلام» → پاسخ گفتگویی طبیعی</td></tr>
   </table>
 
-  <h2>7&nbsp;·&nbsp;Multi-User &amp; Bale</h2>
+  <h2>7&nbsp;·&nbsp;Multi-User</h2>
   <ul>
     <li>The whitelist is the D1 <span class="mono">users (platform, user_id)</span> table; tasks are scoped per platform so the same numeric id on two messengers never collides. Adding a user is one SQL insert (no redeploy).</li>
-    <li>Reminders and the daily morning list are delivered on <b>each user's own messenger</b> (Telegram or Bale).</li>
-    <li><b>Bale</b> mirrors Telegram's Bot API: the worker serves it at <span class="mono">POST /bale</span>, its bot token/secret are separate secrets, and registration is <span class="mono">node scripts/set-webhook.mjs &lt;url&gt; --bale</span> (base <span class="mono">tapi.bale.ai</span>).</li>
+    <li>Reminders and the daily morning list are delivered to <b>each user individually</b>.</li>
   </ul>
 
   <h2>8&nbsp;·&nbsp;Live Transcripts (raw, from the deployed bot)</h2>
@@ -239,23 +238,6 @@
     <li><b>Jalali leap-year port bug.</b> Porting jalaali-js with <span class="mono">Math.floor</span> instead of truncating division shifted every date by one day (a negative <span class="mono">mod</span> in the leap calculation). Unit tests with Nowruz and leap-day fixtures caught it.</li>
     <li><b>Persian text matching.</b> Arabic ي/ى vs Persian ی, ك vs ک, zero-width non-joiner and Persian digits all broke fuzzy search until a normalizer folded them.</li>
   </ul>
-
-  <h2>11&nbsp;·&nbsp;Operations &amp; Deliverables</h2>
-  <div class="twocol">
-    <div>
-      <ul>
-        <li><span class="pill">live</span> https://hermes-mini.mojtaba-dev.workers.dev/health</li>
-        <li><span class="pill">migrations</span> <span class="mono">0001_init.sql</span>, <span class="mono">0002_multiuser.sql</span> — schema kept separate from code (R7)</li>
-      </ul>
-    </div>
-    <div>
-      <ul>
-        <li><span class="pill">ops</span> <span class="mono">wrangler deploy</span>, secrets via <span class="mono">wrangler secret put</span>, observability on, live logs with <span class="mono">wrangler tail</span></li>
-        <li><span class="pill">quality</span> 46 / 46 tests passing; 38-case decision-contract suite; live 4-model benchmark harness</li>
-        <li><span class="pill">bonus</span> Daily morning reminder per user via Cron Triggers (+0.25)</li>
-      </ul>
-    </div>
-  </div>
 
   <div class="footer"><span>hermes-mini · Technical Report · Cloudflare Workers + D1 + Gemini · November 2026</span><span>Page 4 / 4</span></div>
 </div>

@@ -1,6 +1,6 @@
 # hermes-mini — دستیار وظایف فارسی روی Cloudflare
 
-A serverless Persian task assistant for **Telegram and Bale**, for **multiple whitelisted users**.
+A serverless Persian task assistant for **Telegram**, for **multiple whitelisted users**.
 You talk to it like a human — it understands free-form Persian, manages tasks in D1, reminds you
 before important deadlines, tracks streaks, and runs **entirely on the Cloudflare free plan**
 (per the *Cloud Computing Course Project* spec).
@@ -52,8 +52,6 @@ tests/quick-test.mts     38 logic tests (Jalali dates, validation contract, roun
 | `TELEGRAM_BOT_TOKEN` | Bot token | [@BotFather](https://t.me/BotFather) → `/newbot` |
 | `TELEGRAM_WEBHOOK_SECRET` | Any long random string; Telegram echoes it in `X-Telegram-Bot-Api-Secret-Token` | you invent it |
 | `GEMINI_KEYS` | JSON array of 1–10 Gemini API keys: `["k1","k2",…]` | [aistudio.google.com](https://aistudio.google.com) → Get API key (one key per Google Cloud project — 10 keys = 10× free quota) |
-| `BALE_BOT_TOKEN` *(optional)* | Bale bot token | Bale's botfather equivalent; needed only if you enable Bale |
-| `BALE_WEBHOOK_SECRET` *(optional)* | Bale webhook secret | falls back to `TELEGRAM_WEBHOOK_SECRET` if unset |
 
 Non-secret vars live in `wrangler.toml`: `TEHRAN_DAILY_HOUR` (morning list hour), `GEMINI_MODEL`
 (default `gemini-3.5-flash-lite`), and `ALLOWED_USER_ID` — a **bootstrap** id that is auto-added
@@ -150,13 +148,11 @@ Trigger the cron locally: `curl "http://127.0.0.1:8787/cdn-cgi/local/scheduled"`
 7. 3.x models run with `thinkingLevel: "low"` — benchmarked 11.2s → 3.6s per decision with no
    quality loss on the task contract.
 
-## Multi-user & Bale
+## Multi-user
 
 - The whitelist is the D1 `users (platform, user_id)` table; strangers are rejected **silently**.
 - Tasks are scoped `(platform, user_id)` — the same numeric id on two messengers never collides.
 - Reminders and the daily cron send each user their list on **their own platform**.
-- **Bale**: deploy as usual, put `BALE_BOT_TOKEN` (+ optional `BALE_WEBHOOK_SECRET`) as secrets,
-  then `node scripts/set-webhook.mjs <url> --bale`. The worker serves Bale at `POST /bale`.
 
 ## Free-plan budget (Phase 6 seed)
 
